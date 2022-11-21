@@ -1,51 +1,13 @@
 <template>
+
   <div>
-    <warning-bar title="值班人员必须保证可以及时查看报警、响应紧急事件，目标是保障线上服务稳定。" />
-    <div class="gva-table-box">
-      <el-tabs v-model="tabsActiveName">
-        <el-tab-pane label="Index" name="index">
-          <el-row :gutter="10">
-            <el-col :span="12">
-              <el-card>
-                <template #header>
-                  <div>值班职责</div>
-                </template>
-                <div>
-                  <el-row>
-                    <el-col>
-                      <p v-html='onCall_notice'></p>
-                    </el-col>
-                  </el-row>
-                </div>
-              </el-card>
-            </el-col>
-            <el-col :span="12">
-              <el-card>
-                <template #header>
-                  <div>今日值班</div>
-                </template>
-                <el-table :data="tableData" border style="width: 100%">
-                  <el-table-column prop="group" label="值班分类" width="180" />
-                  <el-table-column prop="name" label="值班人员" width="180" />
-                  <el-table-column prop="phone" label="值班电话" />
-                </el-table>
-              </el-card>
-            </el-col>
-          </el-row>
-        </el-tab-pane>
-        <el-tab-pane label="List" name="list">
-          <el-row :gutter="10">
-            <el-col :span="24">
-              <el-card>
-                <FullCalendar :options="calendarOptions" />
-              </el-card>
-            </el-col>
-          </el-row>
-        </el-tab-pane>
-      </el-tabs>
-    </div>
-
-
+    <el-row :gutter="10">
+      <el-col :span="24">
+        <el-card>
+          <FullCalendar :options="calendarOptions" />
+        </el-card>
+      </el-col>
+    </el-row>
 
     <!-- 值班弹窗-Form -->
     <el-dialog v-model="dialogFormVisible" title="排班规则">
@@ -57,24 +19,22 @@
           </el-col>
         </el-form-item>
 
-        <el-row>
-          <el-form-item label="值班分类">
-            <el-select v-model="form.type1" placeholder="请选择分类">
-              <el-option label="运维值班" value="sre" />
-              <el-option label="zhixing研发" value="zhixing" />
-            </el-select>
-          </el-form-item>
-          <el-button icon="plus" @click="addGroup" style="margin-left: 10px;" circle />
-        </el-row>
-
+        <el-form-item label="值班分类">
+          <el-select v-model="form.type1" placeholder="请选择分类">
+            <el-option label="运维值班" value="sre" />
+            <el-option label="zhixing研发" value="zhixing" />
+          </el-select>
+        </el-form-item>
 
         <!-- <el-form-item label="分类颜色">
           <el-color-picker v-model="color" show-alpha :predefine="predefineColors" />
         </el-form-item> -->
 
         <el-form-item label="值班人员">
-          <el-select-v2 v-model="value" filterable :options="options" placeholder="请选择值班人员" style="width: 240px"
-            multiple />
+          <el-select v-model="form.region" placeholder="请选择值班人员">
+            <el-option label="郑富强" value="zhengfuqiang" />
+            <el-option label="白少凯" value="baishaokai" />
+          </el-select>
         </el-form-item>
 
         <el-form-item label="全天">
@@ -151,10 +111,6 @@
 
 <script setup>
 import { reactive, ref } from 'vue'
-import WarningBar from '@/components/warningBar/warningBar.vue'
-
-const tabsActiveName = ref('list')
-
 
 const dialogFormVisible = ref(false)
 const formFreqVisible = ref(false)
@@ -185,20 +141,9 @@ const handleRepeatChange = (value) => {
   dialogFormFreqVisible = true
 }
 
-const addGroup = (value) => {
-  console.log(value)
-}
-
-const value = ref([])
-const initials = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
-const options = Array.from({ length: 1000 }).map((_, idx) => ({
-  value: `Option${idx + 1}`,
-  label: `${initials[idx % 10]}${idx}`,
-}))
-
 const form = reactive({
   name: '',
-  users: ['zhengfuqiang', 'baishaokai', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'],
+  region: '',
   freq: '天',
   date1: '',
   date2: '',
@@ -210,8 +155,6 @@ const form = reactive({
   startTime: '',
   endTime: ''
 })
-
-const onCall_notice = `<p style="margin:0;"><span style="color: rgb(221, 64, 50);">值班人员必须保证可以及时查看报警、响应紧急事件，目标是保障线上服务稳定。</span></p><p style="margin:0;"><br /></p><p style="margin:0;">值班内容如下：</p><p style="margin:0;"><br /></p><p style="margin:0;">1.每天值班开始，优先检查报警并联系相关人处理。</p><p style="margin:0;"><br /></p><p style="margin:0;">2.值班期间关注各技术大群里反馈的线上技术问题。</p><p style="margin:0;"><br /></p><p style="margin:0;">备注 值班班次说明</p><p style="margin:0;"><br /></p><p style="margin:0;">早班 工作日 早7:00-9:30 周末和节假日 早7:00-15:30</p><p style="margin:0;"><br /></p><p style="margin:0;">晚班 工作日 晚19:00-24:00 周末和节假日 下午15:30-24:00</p>`
 
 // 提交
 const enterDialog = () => {
@@ -225,34 +168,6 @@ const enterDialog = () => {
   //   })
   //   return false
 }
-
-const tableData = [
-  {
-    group: '运维值班1',
-    name: 'Tom',
-    phone: '18611111111',
-  },
-  {
-    group: '运维值班2',
-    name: 'zhengfuqiang',
-    phone: '18611111111',
-  },
-  {
-    group: 'ami研发值班',
-    name: 'tangliang',
-    phone: '18611111111',
-  },
-  {
-    group: 'zhixing运维值班',
-    name: 'zhixing',
-    phone: '18611111111',
-  },
-  {
-    group: 'inf运维值班',
-    name: 'baishaokai',
-    phone: '18611111111',
-  },
-]
 </script>
 
 <script>
@@ -330,7 +245,7 @@ export default {
           {
             id: 12,
             title: '运维值班-早班',
-            groupId: 'blueEvents1', // recurrent events in this group move together
+            groupId: 'blueEvents', // recurrent events in this group move together
             daysOfWeek: ['4'],
             startTime: '00:00:00',
             endTime: '12:00:00',
@@ -339,7 +254,7 @@ export default {
           {
             id: 13,
             title: '运维值班-晚班',
-            groupId: 'blueEvents2', // recurrent events in this group move together
+            groupId: 'blueEvents', // recurrent events in this group move together
             daysOfWeek: ['4'],
             startTime: '12:00:00',
             endTime: '23:59:00',
@@ -495,8 +410,4 @@ export default {
 /* .input_number_span {
   margin-left: 20px;
 } */
-.gva-table-box {
-  padding-top: 5px;
-  padding-bottom: 10px;
-}
 </style>
