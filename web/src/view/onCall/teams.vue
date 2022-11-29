@@ -11,6 +11,23 @@
 
 <script setup>
 import WarningBar from '@/components/warningBar/warningBar.vue'
+// import { RRule } from 'rrule'
+
+// // Create a rule:
+// const rule = new RRule({
+//   freq: RRule.WEEKLY,
+//   interval: 5,
+//   byweekday: [RRule.MO, RRule.FR],
+//   dtstart: new Date(2022,11,23,11,24,00),
+//   until: new Date(2022,11,25,11,24,00)
+//   // dtstart: datetime(2012, 2, 1, 10, 30),
+//   // until: datetime(2012, 12, 31)
+// })
+
+// Get all occurrence dates (Date instances):
+// rule.all()
+
+// console.log(rule.all())
 
 const tableData = [
   {

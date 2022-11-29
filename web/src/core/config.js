@@ -3,7 +3,7 @@
  */
 
 const config = {
-  appName: 'Alert',
+  appName: 'onCall',
   appLogo: 'https://www.gin-vue-admin.com/img/logo.png',
   showViteLogo: true
 }

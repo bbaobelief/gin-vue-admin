@@ -39,20 +39,18 @@
     <el-dialog v-model="dialogFormVisible" title="排班规则">
       <el-form :model="form" label-width="120px">
         <el-form-item label="人员">
-            <el-select v-model="form.user" placeholder="请选择人员">
-              <el-option label="郑富强" value="zhengfuqiang" />
-              <el-option label="白少凯" value="baishaokai" />
-            </el-select>
-          </el-form-item>
-        <el-row>
-          <el-form-item label="分类">
-            <el-select v-model="form.type1" placeholder="请选择分类">
-              <el-option label="早班" value="sre" />
-              <el-option label="晚班" value="zhixing" />
-            </el-select>
-          </el-form-item>
-          <!-- <el-button icon="plus" @click="addGroup" style="margin-left: 10px;" circle /> -->
-        </el-row>
+          <el-select v-model="form.user" placeholder="请选择人员">
+            <el-option label="郑富强" value="zhengfuqiang" />
+            <el-option label="白少凯" value="baishaokai" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="分类">
+          <el-select v-model="form.type1" placeholder="请选择分类">
+            <el-option label="早班" value="sre" />
+            <el-option label="晚班" value="zhixing" />
+          </el-select>
+        </el-form-item>
+        <!-- <el-button icon="plus" @click="addGroup" style="margin-left: 10px;" circle /> -->
         <el-form-item label="全天">
           <el-switch v-model="form.allDay" />
         </el-form-item>
@@ -87,37 +85,60 @@
         </el-form-item> -->
 
         <el-form-item label="重复">
-          <el-switch v-model="form.freqVisible" />
+          <el-switch v-model="form.repeatVisible" />
         </el-form-item>
-        <div v-if="form.freqVisible">
-          <el-form-item label="重复周期">
-            <el-radio-group v-model="form.freq">
-              <el-radio label="天" />
-              <el-radio label="周" />
-              <el-radio label="月" />
-            </el-radio-group>
+        <div v-if="form.repeatVisible">
+          <el-form-item label="重复频率">
+            <el-col :span="1" class="text-center">
+              <span class="text-gray-500">每</span>
+            </el-col>
+            <el-col :span="4" class="text-center">
+              <el-input-number v-model="num" :min="1" :max="10" controls-position="right" @change="handleChange"
+                style="width: 80px;" />
+            </el-col>
+            <el-col :span="4" class="text-center">
+              <el-select v-model="form.freq" @change="selectFreq">
+                <el-option label="天" value="RRule.DAILY" />
+                <el-option label="周" value="RRule.WEEKLY" />
+              </el-select>
+            </el-col>
           </el-form-item>
-          <el-form-item label="按工作日">
+          <el-form-item label="按工作日" v-if="form.freqVisible">
             <el-checkbox-group v-model="form.byweekday">
-              <el-checkbox label="周一" name="byweekday" />
-              <el-checkbox label="周二" name="byweekday" />
-              <el-checkbox label="周三" name="byweekday" />
-              <el-checkbox label="周四" name="byweekday" />
-              <el-checkbox label="周五" name="byweekday" />
-              <el-checkbox label="周六" name="byweekday" />
-              <el-checkbox label="周日" name="byweekday" />
+              <el-checkbox label="周一" name="RRule.MO" />
+              <el-checkbox label="周二" name="RRule.TU" />
+              <el-checkbox label="周三" name="RRule.WE" />
+              <el-checkbox label="周四" name="RRule.TH" />
+              <el-checkbox label="周五" name="RRule.FR" />
+              <el-checkbox label="周六" name="RRule.SA" />
+              <el-checkbox label="周日" name="RRule.SU" />
             </el-checkbox-group>
           </el-form-item>
-          <el-form-item label="重复间隔">
-            <el-input-number v-model="num" :min="1" :max="10" controls-position="right" @change="handleChange" />
+          <el-form-item label="结束重复">
+            <el-col :span="5" class="text-center">
+              <el-select v-model="form.endRepeat" placeholder="请选择" @change="selectEndRecur">
+                <el-option label="无限重复" value="0" />
+                <el-option label="限制次数" value="1" />
+                <el-option label="终止于某天" value="2" />
+              </el-select>
+            </el-col>
+            <el-col :span="4" class="text-center" v-if="form.countVisible">
+              <el-input-number v-model="form.count" :min="1" :max="10" controls-position="right" style="width: 80px;" />
+            </el-col>
+            <el-col :span="2" class="text-center" v-if="form.countVisible">
+              <span class="text-gray-500">次后</span>
+            </el-col>
+            <el-col :span="6" v-if="form.endRecurVisible">
+              <el-date-picker v-model="form.endRecur" type="date" placeholder="结束日期" style="margin-left: 5px;" />
+            </el-col>
           </el-form-item>
         </div>
 
-        <el-form-item label="备注">
-          <el-col :span="14">
-            <el-input v-model="form.lastName" placeholder="" />
+        <!-- <el-form-item label="备注">
+          <el-col :span="18">
+            <el-input v-model="textarea" :rows="2" type="textarea" placeholder="Please input" />
           </el-col>
-        </el-form-item>
+        </el-form-item> -->
 
       </el-form>
 
@@ -133,6 +154,17 @@
 
 <script setup>
 import { reactive, ref } from 'vue'
+// import { datetime, RRule, RRuleSet, rrulestr } from 'rrule'
+// const rule = new RRule({
+//   freq: RRule.WEEKLY,
+//   interval: 5,
+//   byweekday: [RRule.MO, RRule.FR],
+//   dtstart: datetime(2022, 11, 24, 10, 30),
+//   until: datetime(2022, 11, 30)
+// })
+
+// // Get all occurrence dates (Date instances):
+// console.log(rule.all())
 
 const formFreqVisible = ref(false)
 const color = ref('rgba(255, 69, 0, 0.68)')
@@ -184,9 +216,15 @@ const form = reactive({
   type: [],
   resource: '',
   desc: '',
-  freqVisible: false,
   startTime: '',
-  endTime: ''
+  endTime: '',
+  freqVisible: false,
+  repeatVisible: false,
+  countVisible: false, // 是否显示-限制次数
+  endRecurVisible: false, // 是否显示-结束重复日期
+  endRepeat: '0', // 结束重复
+  endRecur: '', // 结束重复日期
+  count: '1', // 重复次数
 })
 
 const onCall_notice = `<p style="margin:0;"><span style="color: rgb(221, 64, 50);">值班人员必须保证可以及时查看报警、响应紧急事件，目标是保障线上服务稳定。</span></p><p style="margin:0;"><br /></p><p style="margin:0;">值班内容如下：</p><p style="margin:0;"><br /></p><p style="margin:0;">1.每天值班开始，优先检查报警并联系相关人处理。</p><p style="margin:0;"><br /></p><p style="margin:0;">2.值班期间关注各技术大群里反馈的线上技术问题。</p><p style="margin:0;"><br /></p><p style="margin:0;">备注 值班班次说明</p><p style="margin:0;"><br /></p><p style="margin:0;">早班 工作日 早7:00-9:30 周末和节假日 早7:00-15:30</p><p style="margin:0;"><br /></p><p style="margin:0;">晚班 工作日 晚19:00-24:00 周末和节假日 下午15:30-24:00</p>`
@@ -231,6 +269,27 @@ const tableData = [
     phone: '18611111111',
   },
 ]
+
+// 重复周期
+const selectFreq = (value) => {
+  console.log(value)
+  if (value === 'RRule.WEEKLY') {
+    form.freqVisible = true
+  } else {
+    form.freqVisible = false
+  }
+}
+
+// 结束重复
+const selectEndRecur = (value) => {
+  form.countVisible = false
+  form.endRecurVisible = false
+  if (value === '1') {
+    form.countVisible = true
+  } else if (value === '2') {
+    form.endRecurVisible = true
+  }
+}
 </script>
 
 <script>
@@ -248,6 +307,7 @@ import interactionPlugin from '@fullcalendar/interaction'
 import zhCnLocale from '@fullcalendar/core/locales/zh-cn'
 import bootstrap5Plugin from '@fullcalendar/bootstrap5'
 import { formatDateTime } from '@/utils/format'
+import { RRule, RRuleSet, rrulestr } from 'rrule'
 
 export default {
   name: 'onCall',
@@ -299,8 +359,8 @@ export default {
           {
             id: 10,
             title: 'zhixing项目值班',
-            start: '2022-11-01',
-            end: '2022-11-05',
+            start: '2022-11-11',
+            end: '2022-11-13',
             user: '郑富强',
             // color: '#ffcc99',
             // editable: true, //允许拖动缩放，不写默认就是false
@@ -424,16 +484,29 @@ export default {
       let title = "123"
       let calendarApi = info.view.calendar
       calendarApi.unselect() // clear date selection
-      if (title) {
-        calendarApi.addEvent({
-          id: 111,
-          title,
-          start: info.startStr,
-          end: info.endStr,
-          allDay: info.allDay
-        })
-      }
-      this.dialogFormVisible = true
+
+      const rule = new RRule({
+        freq: RRule.DAILY,
+        interval: 1,
+        // byweekday: [RRule.MO, RRule.FR],
+        dtstart: info.start,
+        until: info.end
+      })
+
+      // Get all occurrence dates (Date instances):
+
+      console.log(1111, info)
+      console.log(2222, rule.all())
+      // if (title) {
+      //   calendarApi.addEvent({
+      //     id: 111,
+      //     title,
+      //     start: info.startStr,
+      //     end: info.endStr,
+      //     allDay: info.allDay
+      //   })
+      // }
+      // this.dialogFormVisible = true
       console.log(this.dialogFormVisible)
     },
     // 鼠标悬浮
