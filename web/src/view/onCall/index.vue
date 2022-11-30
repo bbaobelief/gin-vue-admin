@@ -37,74 +37,65 @@
 
     <!-- 值班弹窗-Form -->
     <el-dialog v-model="dialogFormVisible" title="排班规则">
-      <el-form :model="form" label-width="120px">
-        <el-form-item label="人员">
-          <el-select v-model="form.user" placeholder="请选择人员">
-            <el-option label="郑富强" value="zhengfuqiang" />
-            <el-option label="白少凯" value="baishaokai" />
-          </el-select>
+      <el-form :model="eventForm" label-width="120px">
+        <el-form-item label="人员" prop="userName">
+          <el-cascader v-model="eventForm.users" style="width:80%" :options="userOptions" :show-all-levels="false"
+            :props="{ multiple: true, checkStrictly: true, label: 'nickName', value: 'userName', disabled: 'disabled', emitPath: false }"
+            :clearable="false" />
         </el-form-item>
         <el-form-item label="分类">
-          <el-select v-model="form.type1" placeholder="请选择分类">
+          <el-select v-model="eventForm.role" placeholder="请选择" class="select-role">
             <el-option label="早班" value="sre" />
             <el-option label="晚班" value="zhixing" />
           </el-select>
         </el-form-item>
         <!-- <el-button icon="plus" @click="addGroup" style="margin-left: 10px;" circle /> -->
         <el-form-item label="全天">
-          <el-switch v-model="form.allDay" />
+          <el-switch v-model="eventForm.allDay" />
         </el-form-item>
         <el-form-item label="开始">
-          <el-col :span="10">
-            <el-date-picker v-model="form.date1" type="date" placeholder="开始日期" />
+          <el-col :span="6">
+            <el-date-picker v-model="eventForm.startDate" type="date" placeholder="开始日期" />
           </el-col>
-          <el-col :span="2" class="text-center" v-if="!form.allDay">
+          <el-col :span="1" class="text-center" v-if="!eventForm.allDay">
             <span class="text-gray-500">-</span>
           </el-col>
-          <el-col :span="10" v-if="!form.allDay">
-            <el-time-select v-model="form.startTime" start="00:00" step="00:60" end="24:00" placeholder="开始时间" />
+          <el-col :span="5" v-if="!eventForm.allDay">
+            <el-time-select v-model="eventForm.startTime" start="00:00" step="00:60" end="24:00" placeholder="时间" />
           </el-col>
         </el-form-item>
         <el-form-item label="结束">
-          <el-col :span="10">
-            <el-date-picker v-model="form.date2" type="date" placeholder="结束日期" />
+          <el-col :span="6">
+            <el-date-picker v-model="eventForm.endDate" type="date" placeholder="结束日期" />
           </el-col>
-          <el-col :span="2" class="text-center" v-if="!form.allDay">
+          <el-col :span="1" class="text-center" v-if="!eventForm.allDay">
             <span class="text-gray-500">-</span>
           </el-col>
-          <el-col :span="10" v-if="!form.allDay">
-            <el-time-select v-model="form.endTime" start="00:00" step="00:60" end="24:00" placeholder="结束时间" />
+          <el-col :span="5" v-if="!eventForm.allDay">
+            <el-time-select v-model="eventForm.endTime" start="00:00" step="00:60" end="24:00" placeholder="时间" />
           </el-col>
         </el-form-item>
-
-        <!-- <el-form-item label="重复类型">
-          <el-select v-model="form.freq" placeholder="自定义周期">
-            <el-option label="天" value="天" />
-            <el-option label="周" value="周" />
-          </el-select>
-        </el-form-item> -->
-
         <el-form-item label="重复">
-          <el-switch v-model="form.repeatVisible" />
+          <el-switch v-model="eventForm.repeatVisible" />
         </el-form-item>
-        <div v-if="form.repeatVisible">
+        <div v-if="eventForm.repeatVisible">
           <el-form-item label="重复频率">
             <el-col :span="1" class="text-center">
               <span class="text-gray-500">每</span>
             </el-col>
             <el-col :span="4" class="text-center">
-              <el-input-number v-model="num" :min="1" :max="10" controls-position="right" @change="handleChange"
-                style="width: 80px;" />
+              <el-input-number class="number-interval" v-model="eventForm.interval" :min="1" :max="1000"
+                controls-position="right" />
             </el-col>
-            <el-col :span="4" class="text-center">
-              <el-select v-model="form.freq" @change="selectFreq">
+            <el-col :span="2" class="text-center">
+              <el-select v-model="eventForm.freq" class="select-freq" @change="selectFreq">
                 <el-option label="天" value="RRule.DAILY" />
                 <el-option label="周" value="RRule.WEEKLY" />
               </el-select>
             </el-col>
           </el-form-item>
-          <el-form-item label="按工作日" v-if="form.freqVisible">
-            <el-checkbox-group v-model="form.byweekday">
+          <el-form-item label="按工作日" v-if="eventForm.freqVisible">
+            <el-checkbox-group v-model="eventForm.byweekday">
               <el-checkbox label="周一" name="RRule.MO" />
               <el-checkbox label="周二" name="RRule.TU" />
               <el-checkbox label="周三" name="RRule.WE" />
@@ -115,31 +106,25 @@
             </el-checkbox-group>
           </el-form-item>
           <el-form-item label="结束重复">
-            <el-col :span="5" class="text-center">
-              <el-select v-model="form.endRepeat" placeholder="请选择" @change="selectEndRecur">
-                <el-option label="无限重复" value="0" />
-                <el-option label="限制次数" value="1" />
-                <el-option label="终止于某天" value="2" />
+            <el-col :span="6" class="text-center">
+              <el-select v-model="eventForm.endRepeat" placeholder="请选择" @change="selectEndRecur">
+                <el-option label="无限重复" value='0' />
+                <el-option label="限制次数" value='1' />
+                <el-option label="终止于某天" value='2' />
               </el-select>
             </el-col>
-            <el-col :span="4" class="text-center" v-if="form.countVisible">
-              <el-input-number v-model="form.count" :min="1" :max="10" controls-position="right" style="width: 80px;" />
+            <el-col :span="4" class="text-center" v-if="eventForm.countVisible">
+              <el-input-number class="number-interval" v-model="eventForm.count" :min="1" :max="1000"
+                controls-position="right" />
             </el-col>
-            <el-col :span="2" class="text-center" v-if="form.countVisible">
+            <el-col :span="2" class="text-center" v-if="eventForm.countVisible">
               <span class="text-gray-500">次后</span>
             </el-col>
-            <el-col :span="6" v-if="form.endRecurVisible">
-              <el-date-picker v-model="form.endRecur" type="date" placeholder="结束日期" style="margin-left: 5px;" />
+            <el-col :span="6" v-if="eventForm.endRecurVisible">
+              <el-date-picker v-model="eventForm.endRecur" type="date" placeholder="结束日期" style="margin-left: 5px;" />
             </el-col>
           </el-form-item>
         </div>
-
-        <!-- <el-form-item label="备注">
-          <el-col :span="18">
-            <el-input v-model="textarea" :rows="2" type="textarea" placeholder="Please input" />
-          </el-col>
-        </el-form-item> -->
-
       </el-form>
 
       <template #footer>
@@ -154,6 +139,8 @@
 
 <script setup>
 import { reactive, ref } from 'vue'
+import { getUserList } from '@/api/user'
+// import { getAuthorityList } from '@/api/user'
 // import { datetime, RRule, RRuleSet, rrulestr } from 'rrule'
 // const rule = new RRule({
 //   freq: RRule.WEEKLY,
@@ -166,7 +153,7 @@ import { reactive, ref } from 'vue'
 // // Get all occurrence dates (Date instances):
 // console.log(rule.all())
 
-const formFreqVisible = ref(false)
+// const formFreqVisible = ref(false)
 const color = ref('rgba(255, 69, 0, 0.68)')
 const predefineColors = ref([
   '#ff4500',
@@ -205,27 +192,26 @@ const options = Array.from({ length: 1000 }).map((_, idx) => ({
   label: `${initials[idx % 10]}${idx}`,
 }))
 
-const form = reactive({
-  name: '',
-  users: ['zhengfuqiang', 'baishaokai', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'],
-  freq: '天',
-  date1: '',
-  date2: '',
-  repeat: false,
-  allDay: true,
-  type: [],
-  resource: '',
-  desc: '',
-  startTime: '',
-  endTime: '',
-  freqVisible: false,
-  repeatVisible: false,
-  countVisible: false, // 是否显示-限制次数
-  endRecurVisible: false, // 是否显示-结束重复日期
-  endRepeat: '0', // 结束重复
-  endRecur: '', // 结束重复日期
-  count: '1', // 重复次数
-})
+// const form = reactive({
+//   name: '',
+//   users: ['zhengfuqiang', 'baishaokai', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'],
+//   freq: '天',
+//   date1: '',
+//   date2: '',
+//   repeat: false,
+//   allDay: true,
+//   type: [],
+//   resource: '',
+//   desc: '',
+//   startTime: '',
+//   endTime: '',
+//   freqVisible: false,
+//   repeatVisible: false,
+//   countVisible: false, // 是否显示-限制次数
+//   endRepeat: '0', // 结束重复
+//   endRecur: '', // 结束重复日期
+//   count: '1', // 重复次数
+// })
 
 const onCall_notice = `<p style="margin:0;"><span style="color: rgb(221, 64, 50);">值班人员必须保证可以及时查看报警、响应紧急事件，目标是保障线上服务稳定。</span></p><p style="margin:0;"><br /></p><p style="margin:0;">值班内容如下：</p><p style="margin:0;"><br /></p><p style="margin:0;">1.每天值班开始，优先检查报警并联系相关人处理。</p><p style="margin:0;"><br /></p><p style="margin:0;">2.值班期间关注各技术大群里反馈的线上技术问题。</p><p style="margin:0;"><br /></p><p style="margin:0;">备注 值班班次说明</p><p style="margin:0;"><br /></p><p style="margin:0;">早班 工作日 早7:00-9:30 周末和节假日 早7:00-15:30</p><p style="margin:0;"><br /></p><p style="margin:0;">晚班 工作日 晚19:00-24:00 周末和节假日 下午15:30-24:00</p>`
 
@@ -270,26 +256,75 @@ const tableData = [
   },
 ]
 
+// 弹窗表单
+const eventForm = reactive({
+  users: '',
+  role: '',
+  allDay: true,
+  startDate: '',
+  startTime: '',
+  endDate: '',
+  endTime: '',
+  interval: 1,
+  freq: 'RRule.DAILY',
+  byweekday: [],
+  endRepeat: '0',          // 结束重复
+  endRecur: '',            // 结束重复日期
+  count: 1,                // 重复次数
+  freqVisible: false,      // 显示-周期
+  countVisible: false,     // 显示-限制次数
+  repeatVisible: false,    // 显示-重复
+  endRecurVisible: false,  // 显示-结束重复日期
+})
+
 // 重复周期
 const selectFreq = (value) => {
-  console.log(value)
+  console.log(1111, value)
   if (value === 'RRule.WEEKLY') {
-    form.freqVisible = true
+    eventForm.freqVisible = true
   } else {
-    form.freqVisible = false
+    eventForm.freqVisible = false
   }
+  eventForm.freqVisible = true
+  console.log(eventForm)
 }
 
 // 结束重复
 const selectEndRecur = (value) => {
-  form.countVisible = false
-  form.endRecurVisible = false
+  eventForm.countVisible = false
+  eventForm.endRecurVisible = false
   if (value === '1') {
-    form.countVisible = true
+    eventForm.countVisible = true
   } else if (value === '2') {
-    form.endRecurVisible = true
+    eventForm.endRecurVisible = true
   }
 }
+
+// 用户-初始化相关
+const setUserOptions = (userData, optionsData) => {
+  userData &&
+    userData.forEach(item => {
+      const option = {
+        userName: item.userName,
+        nickName: item.nickName
+      }
+      optionsData.push(option)
+    })
+}
+
+const userOptions = ref([])
+const setOptions = (userData) => {
+  userOptions.value = []
+  setUserOptions(userData, userOptions.value)
+}
+
+const initPage = async () => {
+  // getTableData()
+  const res = await getUserList({ page: 1, pageSize: 999 })
+  setOptions(res.data.list)
+}
+
+initPage()
 </script>
 
 <script>
@@ -549,5 +584,29 @@ export default {
 <style lang='css'>
 .el-card.is-always-shadow {
   margin-bottom: 10px;
+}
+
+.el-input__wrapper {
+  height: 37px;
+}
+
+.el-date-editor.el-input {
+  width: 130px;
+}
+
+.select-role {
+  width: 90px;
+}
+
+.select-freq {
+  width: 60px;
+}
+
+.number-interval {
+  width: 80px;
+}
+
+.el-checkbox {
+  margin-right: 10px;
 }
 </style>
