@@ -215,19 +215,6 @@ const options = Array.from({ length: 1000 }).map((_, idx) => ({
 
 const onCall_notice = `<p style="margin:0;"><span style="color: rgb(221, 64, 50);">值班人员必须保证可以及时查看报警、响应紧急事件，目标是保障线上服务稳定。</span></p><p style="margin:0;"><br /></p><p style="margin:0;">值班内容如下：</p><p style="margin:0;"><br /></p><p style="margin:0;">1.每天值班开始，优先检查报警并联系相关人处理。</p><p style="margin:0;"><br /></p><p style="margin:0;">2.值班期间关注各技术大群里反馈的线上技术问题。</p><p style="margin:0;"><br /></p><p style="margin:0;">备注 值班班次说明</p><p style="margin:0;"><br /></p><p style="margin:0;">早班 工作日 早7:00-9:30 周末和节假日 早7:00-15:30</p><p style="margin:0;"><br /></p><p style="margin:0;">晚班 工作日 晚19:00-24:00 周末和节假日 下午15:30-24:00</p>`
 
-// 提交
-const enterDialog = () => {
-  // dialogFormVisible = false
-  console.log('submit!')
-  // form.value.authorityId = Number(form.value.authorityId)
-  // if (form.value.authorityId === 0) {
-  //   ElMessage({
-  //     type: 'error',
-  //     message: '角色id不能为0'
-  //   })
-  //   return false
-}
-
 const tableData = [
   {
     group: '运维值班1',
@@ -285,8 +272,6 @@ const selectFreq = (value) => {
   } else {
     eventForm.freqVisible = false
   }
-  eventForm.freqVisible = true
-  console.log(eventForm)
 }
 
 // 结束重复
@@ -298,6 +283,20 @@ const selectEndRecur = (value) => {
   } else if (value === '2') {
     eventForm.endRecurVisible = true
   }
+}
+
+// 提交
+const enterDialog = () => {
+  // dialogFormVisible = false
+  console.log('submit!')
+  console.log(eventForm)
+  // form.value.authorityId = Number(form.value.authorityId)
+  // if (form.value.authorityId === 0) {
+  //   ElMessage({
+  //     type: 'error',
+  //     message: '角色id不能为0'
+  //   })
+  //   return false
 }
 
 // 用户-初始化相关
