@@ -96,21 +96,20 @@
           </el-form-item>
           <el-form-item label="按工作日" v-if="eventForm.freqVisible">
             <el-checkbox-group v-model="eventForm.byweekday">
-              <el-checkbox label="周一" name="RRule.MO" />
-              <el-checkbox label="周二" name="RRule.TU" />
-              <el-checkbox label="周三" name="RRule.WE" />
-              <el-checkbox label="周四" name="RRule.TH" />
-              <el-checkbox label="周五" name="RRule.FR" />
-              <el-checkbox label="周六" name="RRule.SA" />
-              <el-checkbox label="周日" name="RRule.SU" />
+              <el-checkbox label="1">周一</el-checkbox>
+              <el-checkbox label="2">周二</el-checkbox>
+              <el-checkbox label="3">周三</el-checkbox>
+              <el-checkbox label="4">周四</el-checkbox>
+              <el-checkbox label="5">周五</el-checkbox>
+              <el-checkbox label="6">周六</el-checkbox>
+              <el-checkbox label="7">周日</el-checkbox>
             </el-checkbox-group>
           </el-form-item>
           <el-form-item label="结束重复">
             <el-col :span="6" class="text-center">
               <el-select v-model="eventForm.endRepeat" placeholder="请选择" @change="selectEndRecur">
-                <el-option label="无限重复" value='0' />
-                <el-option label="限制次数" value='1' />
-                <el-option label="终止于某天" value='2' />
+                <el-option label="无限重复" value="0" />
+                <el-option label="限制次数" value="1" />
               </el-select>
             </el-col>
             <el-col :span="4" class="text-center" v-if="eventForm.countVisible">
@@ -119,9 +118,6 @@
             </el-col>
             <el-col :span="2" class="text-center" v-if="eventForm.countVisible">
               <span class="text-gray-500">次后</span>
-            </el-col>
-            <el-col :span="6" v-if="eventForm.endRecurVisible">
-              <el-date-picker v-model="eventForm.endRecur" type="date" placeholder="结束日期" style="margin-left: 5px;" />
             </el-col>
           </el-form-item>
         </div>
@@ -140,18 +136,7 @@
 <script setup>
 import { reactive, ref } from 'vue'
 import { getUserList } from '@/api/user'
-// import { getAuthorityList } from '@/api/user'
-// import { datetime, RRule, RRuleSet, rrulestr } from 'rrule'
-// const rule = new RRule({
-//   freq: RRule.WEEKLY,
-//   interval: 5,
-//   byweekday: [RRule.MO, RRule.FR],
-//   dtstart: datetime(2022, 11, 24, 10, 30),
-//   until: datetime(2022, 11, 30)
-// })
-
-// // Get all occurrence dates (Date instances):
-// console.log(rule.all())
+import { RRule, RRuleSet, rrulestr } from 'rrule'
 
 // const formFreqVisible = ref(false)
 const color = ref('rgba(255, 69, 0, 0.68)')
@@ -247,7 +232,7 @@ const tableData = [
 const eventForm = reactive({
   users: '',
   role: '',
-  allDay: true,
+  allDay: false,
   startDate: '',
   startTime: '',
   endDate: '',
@@ -257,7 +242,7 @@ const eventForm = reactive({
   byweekday: [],
   endRepeat: '0',          // 结束重复
   endRecur: '',            // 结束重复日期
-  count: 1,                // 重复次数
+  count: -1,               // 重复次数
   freqVisible: false,      // 显示-周期
   countVisible: false,     // 显示-限制次数
   repeatVisible: false,    // 显示-重复
@@ -276,20 +261,61 @@ const selectFreq = (value) => {
 
 // 结束重复
 const selectEndRecur = (value) => {
-  eventForm.countVisible = false
-  eventForm.endRecurVisible = false
-  if (value === '1') {
+  if (value === "1") {
     eventForm.countVisible = true
-  } else if (value === '2') {
-    eventForm.endRecurVisible = true
+  }else{
+    eventForm.countVisible = false
   }
 }
+
+// 映射星期
+const byWeekDay = {
+  1: RRule.MO,
+  2: RRule.TU,
+  3: RRule.WE,
+  4: RRule.TH,
+  5: RRule.FR,
+  6: RRule.SA,
+  7: RRule.SU
+};
 
 // 提交
 const enterDialog = () => {
   // dialogFormVisible = false
   console.log('submit!')
   console.log(eventForm)
+
+  // console.log(byWeekDay['7'])
+
+  // for (const k in eventForm.byweekday) {
+  //   console.log(k, byWeekDay[k])
+  // }
+
+  // 转换星期
+  var byweekday = new Array();
+  for (var i = 0; i < eventForm.byweekday.length; i++) {
+    byweekday[i] = byWeekDay[i + 1];
+  }
+
+  const rruleOption = {
+    freq: eval(eventForm.freq),
+    byweekday: byweekday,
+    interval: eventForm.interval,
+    dtstart: eventForm.startDate,
+    until: eventForm.endDate
+  }
+
+  console.log(eventForm)
+  // if (eventForm.count === 0) {
+
+  // }
+
+  const rule = new RRule(rruleOption)
+
+  // console.log(rule)
+  // Get all occurrence dates (Date instances):
+  console.log(rule.all())
+
   // form.value.authorityId = Number(form.value.authorityId)
   // if (form.value.authorityId === 0) {
   //   ElMessage({
